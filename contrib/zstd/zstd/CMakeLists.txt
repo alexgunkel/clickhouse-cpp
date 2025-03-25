@@ -109,7 +109,7 @@ ADD_LIBRARY (zstdstatic STATIC ${Sources} ${Headers})
 SET_PROPERTY(TARGET zstdstatic PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 TARGET_INCLUDE_DIRECTORIES (zstdstatic
-    PUBLIC ${PROJECT_SOURCE_DIR}/contrib/zstd
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/contrib/zstd>
 )
 
 ADD_LIBRARY(zstd::zstd ALIAS zstdstatic)
