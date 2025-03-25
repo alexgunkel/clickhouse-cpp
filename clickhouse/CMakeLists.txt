@@ -116,7 +116,9 @@ TARGET_LINK_LIBRARIES (clickhouse-cpp-lib
     zstd::zstd
 )
 TARGET_INCLUDE_DIRECTORIES (clickhouse-cpp-lib
-    PUBLIC ${PROJECT_SOURCE_DIR}
+    PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
 )
 
 IF (NOT BUILD_SHARED_LIBS)
@@ -151,34 +153,40 @@ IF (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT DISABLE_CLANG_LIBC_WORKAROUND
     ENDIF ()
 ENDIF ()
 
+INCLUDE (GNUInstallDirs)
 
 INSTALL (TARGETS clickhouse-cpp-lib
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
+    EXPORT clickhouse-cpp-export
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 IF (NOT BUILD_SHARED_LIBS)
     IF (NOT WITH_SYSTEM_CITYHASH)
         INSTALL (TARGETS cityhash
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT clickhouse-cpp-export
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_LZ4)
         INSTALL (TARGETS lz4
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT clickhouse-cpp-export
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_ZSTD)
         INSTALL (TARGETS zstdstatic
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT clickhouse-cpp-export
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_ABSEIL)
         INSTALL (TARGETS absl_int128
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT clickhouse-cpp-export
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     ENDIF()
 ENDIF()
@@ -240,3 +248,11 @@ ENDIF ()
 IF (WIN32 OR MINGW)
     TARGET_LINK_LIBRARIES (clickhouse-cpp-lib wsock32 ws2_32)
 ENDIF ()
+
+
+##### install cmake configuration ################
+
+install(EXPORT clickhouse-cpp-export
+        FILE ClickHouseCppConfig.cmake
+        DESTINATION cmake
+)
