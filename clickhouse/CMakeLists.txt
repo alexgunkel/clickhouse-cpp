@@ -93,7 +93,6 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_extra_wall}")
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-        # a little abnormal when clang check conversion
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_extra_wall} -Wno-conversion")
     endif()
 endif()
@@ -156,37 +155,42 @@ ENDIF ()
 INCLUDE (GNUInstallDirs)
 
 INSTALL (TARGETS clickhouse-cpp-lib
-    EXPORT clickhouse-cpp-export
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    EXPORT ClickHouseCppTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
 )
 IF (NOT BUILD_SHARED_LIBS)
     IF (NOT WITH_SYSTEM_CITYHASH)
         INSTALL (TARGETS cityhash
-            EXPORT clickhouse-cpp-export
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_LZ4)
         INSTALL (TARGETS lz4
-            EXPORT clickhouse-cpp-export
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_ZSTD)
         INSTALL (TARGETS zstdstatic
-            EXPORT clickhouse-cpp-export
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_ABSEIL)
         INSTALL (TARGETS absl_int128
-            EXPORT clickhouse-cpp-export
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF()
 ENDIF()
@@ -248,11 +252,3 @@ ENDIF ()
 IF (WIN32 OR MINGW)
     TARGET_LINK_LIBRARIES (clickhouse-cpp-lib wsock32 ws2_32)
 ENDIF ()
-
-
-##### install cmake configuration ################
-
-install(EXPORT clickhouse-cpp-export
-        FILE ClickHouseCppConfig.cmake
-        DESTINATION cmake
-)
