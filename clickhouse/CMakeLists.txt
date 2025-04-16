@@ -93,7 +93,6 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_extra_wall}")
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-        # a little abnormal when clang check conversion
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_extra_wall} -Wno-conversion")
     endif()
 endif()
@@ -116,7 +115,9 @@ TARGET_LINK_LIBRARIES (clickhouse-cpp-lib
     zstd::zstd
 )
 TARGET_INCLUDE_DIRECTORIES (clickhouse-cpp-lib
-    PUBLIC ${PROJECT_SOURCE_DIR}
+    PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
 )
 
 IF (NOT BUILD_SHARED_LIBS)
@@ -151,35 +152,61 @@ IF (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT DISABLE_CLANG_LIBC_WORKAROUND
     ENDIF ()
 ENDIF ()
 
+INCLUDE (GNUInstallDirs)
 
 INSTALL (TARGETS clickhouse-cpp-lib
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
+    EXPORT ClickHouseCppTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
 )
 IF (NOT BUILD_SHARED_LIBS)
     IF (NOT WITH_SYSTEM_CITYHASH)
         INSTALL (TARGETS cityhash
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_LZ4)
         INSTALL (TARGETS lz4
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_ZSTD)
         INSTALL (TARGETS zstdstatic
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
     ENDIF()
     IF (NOT WITH_SYSTEM_ABSEIL)
         INSTALL (TARGETS absl_int128
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            EXPORT ClickHouseCppTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
         )
+
+        # public headers included by exported clickhouse headers
+        set( ABSEIL_HEADER_BASEDIR "${PROJECT_SOURCE_DIR}/contrib/absl/absl" )
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/numeric/int128.h                  DESTINATION include/absl/numeric/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/numeric/int128_have_intrinsic.inc DESTINATION include/absl/numeric/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/numeric/int128_no_intrinsic.inc   DESTINATION include/absl/numeric/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/numeric/int128.h                  DESTINATION include/absl/numeric/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/attributes.h                 DESTINATION include/absl/base/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/config.h                     DESTINATION include/absl/base/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/macros.h                     DESTINATION include/absl/base/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/optimization.h               DESTINATION include/absl/base/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/options.h                    DESTINATION include/absl/base/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/policy_checks.h              DESTINATION include/absl/base/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/port.h                       DESTINATION include/absl/base/)
+        INSTALL(FILES ${ABSEIL_HEADER_BASEDIR}/base/internal/bits.h              DESTINATION include/absl/base/)
     ENDIF()
 ENDIF()
 

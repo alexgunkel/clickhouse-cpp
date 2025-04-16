@@ -34,7 +34,7 @@ IF (CHECK_VERSION)
     clickhouse_cpp_check_library_version(FATAL_ERROR)
 ENDIF ()
 
-IF (NOT CMAKE_BUILD_TYPE)
+IF (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     SET (CMAKE_BUILD_TYPE "RelWithDebInfo")
 ENDIF ()
 
@@ -155,3 +155,38 @@ if(DEBUG_DEPENDENCIES)
     print_target_debug_info(lz4::lz4)
     print_target_debug_info(zstd::zstd)
 endif()
+
+
+##### install cmake configuration ################
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/ClickHouseCppConfig.cmake"
+        INSTALL_DESTINATION "cmake"
+        NO_SET_AND_CHECK_MACRO
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+set( CLICKHOUSE_CPP_VERSION_MAJOR 2 )
+set( CLICKHOUSE_CPP_VERSION_MINOR 5 )
+set( CLICKHOUSE_CPP_VERSION_PATCH 1 )
+
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/ClickHouseCppConfigVersion.cmake"
+        VERSION "${CLICKHOUSE_CPP_VERSION_MAJOR}.${CLICKHOUSE_CPP_VERSION_MINOR}.${CLICKHOUSE_CPP_VERSION_PATCH}"
+        COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/ClickHouseCppConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/ClickHouseCppConfigVersion.cmake"
+        DESTINATION cmake
+        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
+)
+
+install(EXPORT ClickHouseCppTargets
+        FILE ClickHouseCppTargets.cmake
+        DESTINATION cmake
+        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
+)
